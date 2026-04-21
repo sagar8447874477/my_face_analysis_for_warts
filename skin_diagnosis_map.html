@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skin Condition Diagnosis Map</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --wart: #e8a838;
+    --milia: #58c4dc;
+    --acne: #f47067;
+    --molluscum: #a371f7;
+    --tag: #3fb950;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 20px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    background: linear-gradient(135deg, #58c4dc, #a371f7, #e8a838);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 0.75rem;
+    margin-top: 6px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── FACE DIAGRAM ── */
+  .diagram-section {
+    max-width: 700px;
+    margin: 0 auto 48px;
+    position: relative;
+  }
+
+  .diagram-title {
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .face-container {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  svg.face-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 0 40px rgba(88,196,220,0.08));
+  }
+
+  /* annotation lines */
+  .annotation {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .annotation-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+    50% { box-shadow: 0 0 0 6px transparent; opacity: 0.8; }
+  }
+
+  .annotation-line {
+    width: 40px;
+    height: 1px;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  .annotation-label {
+    font-size: 0.62rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /* ── CARDS GRID ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    max-width: 960px;
+    margin: 0 auto 48px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+
+  .card-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    color: var(--accent);
+  }
+
+  .card-type {
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .micro-diagram {
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tag {
+    font-size: 0.6rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: 1px solid currentColor;
+    opacity: 0.85;
+  }
+
+  .info-row {
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .info-row strong {
+    color: var(--text);
+  }
+
+  .remedy-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .remedy-list li {
+    font-size: 0.7rem;
+    color: var(--muted);
+    padding-left: 12px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .remedy-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 0.65rem;
+  }
+
+  /* found-on badge */
+  .found-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.58rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    opacity: 0.9;
+    width: fit-content;
+  }
+
+  /* ── SEVERITY TABLE ── */
+  .severity-section {
+    max-width: 700px;
+    margin: 0 auto 48px;
+  }
+
+  .section-title {
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sev-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 80px;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(48,54,61,0.5);
+    font-size: 0.72rem;
+  }
+
+  .sev-name { color: var(--accent); font-weight: 500; }
+  .sev-bar-wrap { background: var(--border); border-radius: 4px; height: 6px; }
+  .sev-bar { height: 6px; border-radius: 4px; background: var(--accent); }
+  .sev-label { color: var(--muted); text-align: right; font-size: 0.63rem; }
+
+  /* disclaimer */
+  .disclaimer {
+    max-width: 700px;
+    margin: 0 auto;
+    background: rgba(244,112,103,0.08);
+    border: 1px solid rgba(244,112,103,0.25);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 0.68rem;
+    color: var(--muted);
+    line-height: 1.7;
+    text-align: center;
+  }
+
+  .disclaimer strong { color: #f47067; }
+
+  @media (max-width: 500px) {
+    .cards-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Facial Skin Condition Map</h1>
+  <p>Dermatological Visual Analysis — Your Photos</p>
+</header>
+
+<!-- ─────────────── FACE DIAGRAM ─────────────── -->
+<div class="diagram-section">
+  <p class="diagram-title">📍 Location Map — Where Each Condition Was Found</p>
+
+  <div style="position:relative; max-width:420px; margin:0 auto;">
+    <svg class="face-svg" viewBox="0 0 420 520" xmlns="http://www.w3.org/2000/svg">
+      <!-- skin tone fill -->
+      <defs>
+        <radialGradient id="skinGrad" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="#d4956a"/>
+          <stop offset="100%" stop-color="#b5703a"/>
+        </radialGradient>
+        <radialGradient id="hairGrad" cx="50%" cy="0%" r="100%">
+          <stop offset="0%" stop-color="#2a1a0e"/>
+          <stop offset="100%" stop-color="#1a0f07"/>
+        </radialGradient>
+      </defs>
+
+      <!-- neck -->
+      <rect x="155" y="430" width="110" height="80" rx="12" fill="url(#skinGrad)"/>
+
+      <!-- face shape -->
+      <ellipse cx="210" cy="270" rx="150" ry="175" fill="url(#skinGrad)"/>
+
+      <!-- hair top -->
+      <ellipse cx="210" cy="108" rx="152" ry="68" fill="url(#hairGrad)"/>
+      <rect x="58" y="80" width="304" height="68" fill="url(#hairGrad)"/>
+      <!-- hair sides -->
+      <ellipse cx="62" cy="190" rx="32" ry="80" fill="url(#hairGrad)"/>
+      <ellipse cx="358" cy="190" rx="32" ry="80" fill="url(#hairGrad)"/>
+
+      <!-- forehead hairline boundary -->
+      <path d="M 68 148 Q 210 185 352 148" stroke="url(#hairGrad)" stroke-width="18" fill="none"/>
+
+      <!-- eyebrows -->
+      <path d="M 135 230 Q 160 220 185 228" stroke="#2a1a0e" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <path d="M 235 228 Q 260 220 285 230" stroke="#2a1a0e" stroke-width="7" fill="none" stroke-linecap="round"/>
+
+      <!-- eyes -->
+      <ellipse cx="160" cy="255" rx="22" ry="13" fill="#f5e6d0"/>
+      <ellipse cx="160" cy="255" rx="12" ry="12" fill="#3d2b1f"/>
+      <ellipse cx="260" cy="255" rx="22" ry="13" fill="#f5e6d0"/>
+      <ellipse cx="260" cy="255" rx="12" ry="12" fill="#3d2b1f"/>
+
+      <!-- nose -->
+      <path d="M 210 265 L 198 320 Q 210 330 222 320 Z" fill="#c8824a" opacity="0.6"/>
+      <ellipse cx="195" cy="322" rx="12" ry="8" fill="#b5703a"/>
+      <ellipse cx="225" cy="322" rx="12" ry="8" fill="#b5703a"/>
+
+      <!-- lips -->
+      <path d="M 175 370 Q 210 358 245 370 Q 210 385 175 370 Z" fill="#a0503a"/>
+      <path d="M 175 370 Q 210 382 245 370 Q 210 400 175 370 Z" fill="#8b3d2b"/>
+
+      <!-- beard stubble area -->
+      <ellipse cx="210" cy="400" rx="90" ry="50" fill="#c8824a" opacity="0.4"/>
+      <!-- chin beard dots pattern -->
+      <g fill="#2a1a0e" opacity="0.35">
+        <circle cx="175" cy="385" r="1.5"/><circle cx="182" cy="390" r="1.5"/>
+        <circle cx="190" cy="383" r="1.5"/><circle cx="198" cy="388" r="1.5"/>
+        <circle cx="207" cy="382" r="1.5"/><circle cx="215" cy="389" r="1.5"/>
+        <circle cx="223" cy="384" r="1.5"/><circle cx="231" cy="391" r="1.5"/>
+        <circle cx="240" cy="386" r="1.5"/><circle cx="178" cy="398" r="1.5"/>
+        <circle cx="188" cy="403" r="1.5"/><circle cx="198" cy="397" r="1.5"/>
+        <circle cx="209" cy="404" r="1.5"/><circle cx="220" cy="398" r="1.5"/>
+        <circle cx="230" cy="405" r="1.5"/><circle cx="240" cy="400" r="1.5"/>
+      </g>
+
+      <!-- ══ LESION MARKERS ══ -->
+
+      <!-- 1. WART near hairline (right side) — orange -->
+      <circle cx="270" cy="162" r="9" fill="#e8a838" opacity="0.9"/>
+      <circle cx="270" cy="162" r="5" fill="#fff5e0"/>
+      <circle cx="270" cy="162" r="14" fill="none" stroke="#e8a838" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6">
+        <animateTransform attributeName="transform" type="rotate" from="0 270 162" to="360 270 162" dur="6s" repeatCount="indefinite"/>
+      </circle>
+      <!-- label line -->
+      <line x1="284" y1="162" x2="360" y2="145" stroke="#e8a838" stroke-width="1" opacity="0.7"/>
+      <text x="365" y="143" font-family="DM Mono" font-size="9" fill="#e8a838" letter-spacing="1">WART</text>
+      <text x="365" y="155" font-family="DM Mono" font-size="7.5" fill="#8b949e">Hairline / Verruca</text>
+
+      <!-- 2. MILIA cluster on forehead — cyan -->
+      <circle cx="195" cy="192" r="5" fill="#58c4dc" opacity="0.9"/>
+      <circle cx="205" cy="196" r="4" fill="#58c4dc" opacity="0.75"/>
+      <circle cx="186" cy="198" r="3.5" fill="#58c4dc" opacity="0.7"/>
+      <circle cx="195" cy="192" r="10" fill="none" stroke="#58c4dc" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.5">
+        <animateTransform attributeName="transform" type="rotate" from="0 195 192" to="360 195 192" dur="8s" repeatCount="indefinite"/>
+      </circle>
+      <!-- label -->
+      <line x1="180" y1="192" x2="60" y2="175" stroke="#58c4dc" stroke-width="1" opacity="0.7"/>
+      <text x="15" y="173" font-family="DM Mono" font-size="9" fill="#58c4dc" letter-spacing="1">MILIA</text>
+      <text x="15" y="185" font-family="DM Mono" font-size="7.5" fill="#8b949e">Keratin cysts</text>
+
+      <!-- 3. MOLLUSCUM near hairline darker spot — purple -->
+      <circle cx="278" cy="148" r="7" fill="#a371f7" opacity="0.85"/>
+      <circle cx="278" cy="148" r="3.5" fill="#e0d0ff"/>
+      <line x1="285" y1="142" x2="370" y2="118" stroke="#a371f7" stroke-width="1" opacity="0.7"/>
+      <text x="330" y="116" font-family="DM Mono" font-size="9" fill="#a371f7" letter-spacing="0.5">MOLLUSCUM</text>
+      <text x="330" y="128" font-family="DM Mono" font-size="7.5" fill="#8b949e">Viral / Contagious</text>
+
+      <!-- 4. MILIA on chin/lips area — cyan smaller -->
+      <circle cx="242" cy="360" r="4" fill="#58c4dc" opacity="0.85"/>
+      <circle cx="237" cy="367" r="3" fill="#58c4dc" opacity="0.7"/>
+      <line x1="246" y1="363" x2="330" y2="375" stroke="#58c4dc" stroke-width="1" opacity="0.6"/>
+      <text x="332" y="373" font-family="DM Mono" font-size="9" fill="#58c4dc" letter-spacing="1">MILIA</text>
+      <text x="332" y="385" font-family="DM Mono" font-size="7.5" fill="#8b949e">Chin region</text>
+
+      <!-- 5. ACNE pores (scattered small forehead) — red -->
+      <circle cx="220" cy="210" r="3" fill="#f47067" opacity="0.7"/>
+      <circle cx="230" cy="220" r="2.5" fill="#f47067" opacity="0.6"/>
+      <circle cx="170" cy="215" r="2.5" fill="#f47067" opacity="0.6"/>
+      <line x1="170" y1="215" x2="60" y2="235" stroke="#f47067" stroke-width="1" opacity="0.6"/>
+      <text x="10" y="233" font-family="DM Mono" font-size="9" fill="#f47067" letter-spacing="0.5">COMEDONES</text>
+      <text x="10" y="245" font-family="DM Mono" font-size="7.5" fill="#8b949e">Clogged pores</text>
+
+      <!-- legend box -->
+      <rect x="10" y="455" width="200" height="58" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+      <text x="20" y="470" font-family="DM Mono" font-size="7.5" fill="#8b949e" letter-spacing="1.5">LEGEND</text>
+      <circle cx="22" cy="482" r="4" fill="#e8a838"/><text x="30" y="485" font-family="DM Mono" font-size="7.5" fill="#e6edf3">Wart / Verruca</text>
+      <circle cx="22" cy="494" r="4" fill="#58c4dc"/><text x="30" y="497" font-family="DM Mono" font-size="7.5" fill="#e6edf3">Milia (keratin cyst)</text>
+      <circle cx="22" cy="506" r="4" fill="#a371f7"/><text x="30" y="509" font-family="DM Mono" font-size="7.5" fill="#e6edf3">Molluscum Contagiosum</text>
+      <circle cx="110" cy="482" r="4" fill="#f47067"/><text x="118" y="485" font-family="DM Mono" font-size="7.5" fill="#e6edf3">Comedones/Acne</text>
+    </svg>
+  </div>
+</div>
+
+<!-- ─────────────── CARDS ─────────────── -->
+<div class="cards-grid">
+
+  <!-- WART -->
+  <div class="card" style="--accent: var(--wart);">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(232,168,56,0.12);">🟤</div>
+      <div>
+        <div class="card-name">Common Wart</div>
+        <div class="card-type">Verruca Vulgaris · Viral</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="found-badge">📍 Hairline / Forehead edge</div>
+      <div class="info-row"><strong>Cause:</strong> HPV (Human Papillomavirus) — skin-to-skin or surface contact</div>
+      <div class="info-row"><strong>Looks like:</strong> Rough, raised bump with cauliflower-like or crusty surface. May have tiny black dots (clotted capillaries)</div>
+      <div class="tag-row">
+        <span class="tag" style="color:var(--wart); border-color:var(--wart);">Viral</span>
+        <span class="tag" style="color:var(--wart); border-color:var(--wart);">Contagious</span>
+        <span class="tag" style="color:var(--wart); border-color:var(--wart);">Rough texture</span>
+      </div>
+      <div class="info-row"><strong>Home treatment:</strong></div>
+      <ul class="remedy-list">
+        <li>Salicylic acid gel/patch (17%) nightly — most effective OTC option</li>
+        <li>Apply, cover with tape for occlusion overnight</li>
+        <li>File dead skin with pumice after soaking</li>
+        <li>Apple cider vinegar soaked cotton pad (4–6 weeks)</li>
+        <li>⚠️ Do NOT cut or pick — spreads HPV</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- MILIA -->
+  <div class="card" style="--accent: var(--milia);">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(88,196,220,0.12);">⚪</div>
+      <div>
+        <div class="card-name">Milia</div>
+        <div class="card-type">Keratin Micro-Cysts · Non-infectious</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="found-badge">📍 Forehead + Chin area</div>
+      <div class="info-row"><strong>Cause:</strong> Trapped keratin under skin — dead cells unable to shed normally. Common with oily skin, heavy creams, or sun damage</div>
+      <div class="info-row"><strong>Looks like:</strong> Tiny pearly white/yellow firm bumps, 1–2mm, no redness, no pus</div>
+      <div class="tag-row">
+        <span class="tag" style="color:var(--milia); border-color:var(--milia);">Non-viral</span>
+        <span class="tag" style="color:var(--milia); border-color:var(--milia);">Not contagious</span>
+        <span class="tag" style="color:var(--milia); border-color:var(--milia);">Hard bump</span>
+      </div>
+      <div class="info-row"><strong>Home treatment:</strong></div>
+      <ul class="remedy-list">
+        <li>Exfoliate 2–3x/week with gentle AHA (glycolic acid)</li>
+        <li>Retinol cream at night — promotes cell turnover</li>
+        <li>Sunscreen daily (blocks sun-induced milia)</li>
+        <li>Switch to lightweight non-comedogenic moisturizer</li>
+        <li>⚠️ Never squeeze — leaves scars, doesn't remove keratin</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- MOLLUSCUM -->
+  <div class="card" style="--accent: var(--molluscum);">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(163,113,247,0.12);">🔵</div>
+      <div>
+        <div class="card-name">Molluscum Contagiosum</div>
+        <div class="card-type">Poxvirus · Viral</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="found-badge">📍 Near hairline (darker raised lesion)</div>
+      <div class="info-row"><strong>Cause:</strong> Molluscum Contagiosum Virus (MCV) — direct contact or sharing towels/razors</div>
+      <div class="info-row"><strong>Looks like:</strong> Dome-shaped, smooth, shiny bumps with a characteristic central dimple (umbilication). Can be skin-colored or slightly pink</div>
+      <div class="tag-row">
+        <span class="tag" style="color:var(--molluscum); border-color:var(--molluscum);">Poxvirus</span>
+        <span class="tag" style="color:var(--molluscum); border-color:var(--molluscum);">Self-limiting</span>
+        <span class="tag" style="color:var(--molluscum); border-color:var(--molluscum);">Central dimple</span>
+      </div>
+      <div class="info-row"><strong>Home treatment:</strong></div>
+      <ul class="remedy-list">
+        <li>Tea tree oil (diluted 1:4 with coconut oil) applied daily</li>
+        <li>Colloidal silver or iodine topical application</li>
+        <li>Apple cider vinegar compress for 10 min daily</li>
+        <li>Avoid shaving over affected area — spreads virus</li>
+        <li>⚠️ Resolves on its own in 6–18 months; dermatologist can freeze quickly</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- COMEDONES -->
+  <div class="card" style="--accent: var(--acne);">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(244,112,103,0.12);">🔴</div>
+      <div>
+        <div class="card-name">Comedones / Acne</div>
+        <div class="card-type">Clogged Pores · Inflammatory</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="found-badge">📍 Scattered forehead + chin</div>
+      <div class="info-row"><strong>Cause:</strong> Excess sebum + dead cells blocking follicles. Worsened by sweat, heat (Delhi summer), and hormones</div>
+      <div class="info-row"><strong>Looks like:</strong> Small red bumps, blackheads/whiteheads, occasionally pustules. The scattered small bumps on your forehead fit this pattern</div>
+      <div class="tag-row">
+        <span class="tag" style="color:var(--acne); border-color:var(--acne);">Sebum-related</span>
+        <span class="tag" style="color:var(--acne); border-color:var(--acne);">Not contagious</span>
+        <span class="tag" style="color:var(--acne); border-color:var(--acne);">Common</span>
+      </div>
+      <div class="info-row"><strong>Home treatment:</strong></div>
+      <ul class="remedy-list">
+        <li>Benzoyl peroxide 2.5% wash or gel — kills bacteria</li>
+        <li>Salicylic acid 2% face wash twice daily</li>
+        <li>Niacinamide 10% serum — reduces sebum + inflammation</li>
+        <li>Ice cube on inflamed spots for 2–3 min</li>
+        <li>Avoid touching face — transfers oil and bacteria</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─────────────── SEVERITY ─────────────── -->
+<div class="severity-section">
+  <div class="section-title">Urgency to See a Dermatologist</div>
+
+  <div class="sev-row" style="--accent: var(--molluscum);">
+    <span class="sev-name" style="color:var(--molluscum);">Molluscum</span>
+    <div class="sev-bar-wrap"><div class="sev-bar" style="width:80%; background:var(--molluscum);"></div></div>
+    <span class="sev-label">HIGH — Contagious</span>
+  </div>
+  <div class="sev-row" style="--accent: var(--wart);">
+    <span class="sev-name" style="color:var(--wart);">Wart (HPV)</span>
+    <div class="sev-bar-wrap"><div class="sev-bar" style="width:65%; background:var(--wart);"></div></div>
+    <span class="sev-label">MEDIUM — Spreads</span>
+  </div>
+  <div class="sev-row" style="--accent: var(--acne);">
+    <span class="sev-name" style="color:var(--acne);">Comedones</span>
+    <div class="sev-bar-wrap"><div class="sev-bar" style="width:40%; background:var(--acne);"></div></div>
+    <span class="sev-label">LOW — OTC treatable</span>
+  </div>
+  <div class="sev-row" style="--accent: var(--milia);">
+    <span class="sev-name" style="color:var(--milia);">Milia</span>
+    <div class="sev-bar-wrap"><div class="sev-bar" style="width:25%; background:var(--milia);"></div></div>
+    <span class="sev-label">LOW — Cosmetic</span>
+  </div>
+</div>
+
+<!-- disclaimer -->
+<div class="disclaimer">
+  <strong>⚠️ Medical Disclaimer:</strong> This is a visual educational tool and does not constitute a medical diagnosis. Images were analyzed observationally. Please consult a licensed dermatologist in Delhi for definitive diagnosis and prescription treatment (retinoids, cryotherapy, or topical antivirals may be more effective than home remedies for viral lesions).
+</div>
+
+</body>
+</html>
